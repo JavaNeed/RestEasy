@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- Import basic SpringMVC Resteasy integration -->
+	<import resource="classpath:springmvc-resteasy.xml" />
+	
+	<context:property-placeholder location="classpath:database.properties" />
+
+	<!-- to activate annotations in beans already registered in the ApplicationContext -->
+	<context:annotation-config />
+	
+	<jpa:repositories base-package="com.resteasy.series.spring.mvc.hibernate.repository" />
+
+	<!-- to activate MVC annotation -->
+	<mvc:annotation-driven />
+	
+	<!-- scans packages to find and register beans within the ApplicationContext -->
+	<context:component-scan base-package="com.resteasy.series.spring.mvc.hibernate.*" />
+
+	<!-- turn on spring transaction annotation -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<!-- Transaction Manager -->
+	<bean id="transactionManager"  class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+	
+    
+    <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+        <property name="showSql" value="true"/>
+        <property name="generateDdl" value="true"/>
+        <property name="database" value="MYSQL"/>
+    </bean>
+
+	<!-- Session Factory -->
+	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="jpaVendorAdapter" ref="jpaVendorAdapter"/>
+		<property name="packagesToScan" value="com.resteasy.series.spring.mvc.hibernate.model"/>
+		
+		<!-- <property name="jpaProperties">
+			<props>
+				<prop key="hibernate.hbm2ddl.auto">${mysql.hibernate.hbm2ddl.auto}</prop>
+				<prop key="hibernate.dialect">${mysql.hibernate.dialect}</prop>
+			</props>
+		</property> -->
+		
+	</bean>
+
+	<!-- dataSource configuration -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${mysql.driverClassName}" />
+		<property name="url" value="${mysql.url}" />
+		<property name="username" value="${mysql.username}" />
+		<property name="password" value="${mysql.password}" />
+	</bean>
+
+	<!-- view resolver -->
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+		<property name="prefix" value="/WEB-INF/jsp/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+	
+</beans>
